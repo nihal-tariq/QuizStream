@@ -5,18 +5,13 @@ from typing import List
 import json
 import os
 from datetime import datetime
-from app.db import SessionLocal
 from app.models.mcqs import MCQ
+from app.utils.get_db import get_db
 
 router = APIRouter(prefix="/mcqs", tags=["MCQs"])
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
+get_db()
 
 @router.get("/by-title")
 def get_mcqs_by_video_title(
@@ -34,7 +29,6 @@ def get_mcqs_by_video_title(
     if not mcqs:
         raise HTTPException(status_code=404, detail=f"No MCQs found for video title '{video_title}'")
 
-    # Prepare JSON data
     data = []
     for item in mcqs:
         entry = {

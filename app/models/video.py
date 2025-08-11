@@ -4,6 +4,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 from app.db import Base
 
+
 class Video(Base):
     __tablename__ = "videos"
 

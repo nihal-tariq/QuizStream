@@ -1,5 +1,3 @@
-# app/routers/chatbot_router.py
-
 from fastapi import APIRouter, Form
 from pydantic import BaseModel
 from typing import List, Dict
