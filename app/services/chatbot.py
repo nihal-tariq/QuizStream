@@ -14,9 +14,9 @@ from app.services.prompt_template import build_chat_prompt
 
 # Load env
 load_dotenv()
-api_key = os.getenv("EMBEDDING_KEY")
+api_key = os.getenv("GEMINI_FLASH_KEY")
 if not api_key:
-    raise ValueError("EMBEDDING_KEY not found in .env")
+    raise ValueError("KEY not found in .env")
 
 # Configure Gemini (Google) API
 genai.configure(api_key=api_key)
@@ -105,7 +105,7 @@ def chat_with_video(video_title: str, user_query: str, session_history: list):
     )
 
     # Call Gemini generative model
-    model = genai.GenerativeModel("models/gemini-1.5-flash")
+    model = genai.GenerativeModel("models/gemini-2.5-flash")
     response = model.generate_content(prompt)
 
     # response may be a complex object; the textual contents are in response.text
