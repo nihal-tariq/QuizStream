@@ -1,4 +1,3 @@
-# app/services/chatbot.py
 
 import os
 from dotenv import load_dotenv
@@ -12,13 +11,11 @@ from langchain_community.vectorstores import Chroma
 
 from app.services.prompt_template import build_chat_prompt
 
-# Load env
 load_dotenv()
 api_key = os.getenv("GEMINI_FLASH_KEY")
 if not api_key:
     raise ValueError("KEY not found in .env")
 
-# Configure Gemini (Google) API
 genai.configure(api_key=api_key)
 
 # Chroma client (persistent)
@@ -82,7 +79,7 @@ def chat_with_video(video_title: str, user_query: str, session_history: list):
         # If something unexpected happens, try to create without checking
         chroma_client.create_collection(name=collection_name)
 
-    # Wrap with LangChain's Chroma so we can use .as_retriever(...)
+    # Wrap with LangChain's Chroma, so we can use .as_retriever(...)
     vectorstore = Chroma(
         client=chroma_client,
         collection_name=collection_name,
