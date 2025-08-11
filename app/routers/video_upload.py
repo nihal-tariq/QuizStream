@@ -1,85 +1,32 @@
-import os
-import re
-import uuid
-import shutil
-import logging
-import subprocess
+import os, re, uuid, shutil, logging, subprocess
+
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from sqlalchemy.orm import Session
-from deepgram import Deepgram
-from dotenv import load_dotenv
-import ffmpeg
-import imageio_ffmpeg
 
-from app.models.video import Video
-from app.db import SessionLocal
-from app.services.embeddings import embed_and_store_transcript
+
+from app.utils.get_db import get_db
+from app.utils.audio_handling import extract_audio, transcribe_audio, save_video_and_transcript
 from app.services.mcqs_generation import generate_and_store_mcqs
 
 # ------------------ CONFIG ------------------
-load_dotenv()
+
 router = APIRouter()
 
 UPLOAD_DIR = "uploads/videos/"
 AUDIO_DIR = "uploads/audio/"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(AUDIO_DIR, exist_ok=True)
-
-dg_client = Deepgram(os.getenv("DEEPGRAM_API_KEY"))
+os.makedirs(AUDIO_DIR, exist_ok=True)\
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# ------------------ HELPERS ------------------
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+
+get_db()
+
 
 def sanitize_filename(title: str) -> str:
     return re.sub(r'[^A-Za-z0-9_\-]+', '_', title)
 
-def extract_audio(video_path: str, audio_path: str):
-    try:
-        ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-        (
-            ffmpeg.input(video_path)
-            .output(audio_path, format='mp3', acodec='libmp3lame')
-            .overwrite_output()
-            .run(cmd=ffmpeg_path, quiet=True)
-        )
-        logger.info(f"Audio extracted to {audio_path}")
-    except Exception as e:
-        logger.error(f"Error extracting audio: {e}")
-        raise HTTPException(status_code=500, detail=f"Audio extraction failed: {e}")
-
-def transcribe_audio(audio_path: str) -> str:
-    try:
-        with open(audio_path, "rb") as audio:
-            source = {"buffer": audio, "mimetype": "audio/mpeg"}
-            response = dg_client.transcription.sync_prerecorded(source, {"punctuate": True})
-            transcript = response['results']['channels'][0]['alternatives'][0]['transcript']
-            logger.info("Audio transcription completed")
-            return transcript.strip()
-    except Exception as e:
-        logger.error(f"Transcription error: {e}")
-        raise HTTPException(status_code=500, detail=f"Transcription failed: {e}")
-
-def save_video_and_transcript(title: str, filename: str, filepath: str, transcript: str, db: Session):
-    try:
-        video = Video(title=title, filename=filename, filepath=filepath, transcript=transcript)
-        db.add(video)
-        db.commit()
-        db.refresh(video)
-        embed_and_store_transcript(transcript, title)
-        logger.info(f"Video saved with ID {video.id}")
-        return video
-    except Exception as e:
-        db.rollback()
-        logger.error(f"Error saving video: {e}")
-        raise HTTPException(status_code=500, detail=f"Saving video failed: {e}")
 
 # ------------------ ROUTES ------------------
 @router.post("/upload-video/")
