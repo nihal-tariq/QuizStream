@@ -1,9 +1,8 @@
-# main.py
 from fastapi import FastAPI
 from fastapi import Depends
 from app.db import Base, engine
 from app.models import video, mcqs, user
-from app.routers import video_upload, chatbot_router, quiz, video_list, video_approve, delete_mcqs, auth_router, manage_users
+from app.routers import video_upload, chatbot_router, quiz, video_list, video_approve, delete_mcqs, auth_router, manage_users, take_quiz
 from app.auth import require_role
 
 app = FastAPI()
@@ -29,3 +28,4 @@ app.include_router(delete_mcqs.router, dependencies=[Depends(require_role(["teac
 
 # Both teacher and student can access
 app.include_router(chatbot_router.router, dependencies=[Depends(require_role(["teacher", "student"]))])
+app.include_router(take_quiz.router, dependencies=[Depends(require_role(["teacher", "student"]))])
