@@ -20,6 +20,7 @@ persist_directory = "chroma_db"
 os.makedirs(persist_directory, exist_ok=True)
 chroma_client = PersistentClient(path=persist_directory)
 
+
 class GeminiEmbedding(EmbeddingFunction):
     def __call__(self, texts):
         embeddings = []
@@ -31,6 +32,7 @@ class GeminiEmbedding(EmbeddingFunction):
             )
             embeddings.append(response["embedding"])
         return embeddings
+
 
 def embed_and_store_transcript(transcript: str, video_title: str):
     splitter = SentenceTransformersTokenTextSplitter(chunk_size=1000, chunk_overlap=50)

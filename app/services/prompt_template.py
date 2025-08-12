@@ -1,6 +1,5 @@
-# app/services/prompt_template.py
-
 from typing import List, Dict
+
 
 def build_chat_prompt(video_title: str, context: str, session_history: List[Dict[str, str]], user_query: str) -> str:
     """
@@ -32,6 +31,7 @@ Instructions for the assistant:
 
 Answer now:
 """
+
 
 def format_chat_history(history: List[Dict[str, str]]) -> str:
     if not history:
