@@ -2,6 +2,6 @@ SQLAlchemy~=2.0.42
 python-dotenv~=1.1.1
 fastapi~=0.116.1
 pydantic~=2.11.7
+passlib~=1.7.4
 chromadb~=1.0.15
 langchain~=0.3.27
-alembic~=1.16.4
