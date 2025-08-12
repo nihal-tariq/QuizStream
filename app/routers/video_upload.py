@@ -3,19 +3,15 @@ import os, re, uuid, shutil, logging, subprocess
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-
 from app.utils.get_db import get_db
 from app.utils.audio_handling import extract_audio, transcribe_audio, save_video_and_transcript
-from app.services.mcqs_generation import generate_and_store_mcqs
-
-# ------------------ CONFIG ------------------
 
 router = APIRouter()
 
 UPLOAD_DIR = "uploads/videos/"
 AUDIO_DIR = "uploads/audio/"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
-os.makedirs(AUDIO_DIR, exist_ok=True)\
+os.makedirs(AUDIO_DIR, exist_ok=True)
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -23,8 +19,8 @@ logger = logging.getLogger(__name__)
 
 get_db()
 
-
 def sanitize_filename(title: str) -> str:
+    """Ensure file name is safe for storage."""
     return re.sub(r'[^A-Za-z0-9_\-]+', '_', title)
 
 
@@ -53,17 +49,12 @@ def upload_video(title: str, file: UploadFile = File(...), db: Session = Depends
     transcript = transcribe_audio(audio_path)
     video = save_video_and_transcript(title, unique_filename, filepath, transcript, db)
 
-    try:
-        generate_and_store_mcqs(transcript, title, db)
-    except Exception as e:
-        logger.error(f"MCQ generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"MCQ generation failed: {e}")
-
     return {
         "id": str(video.id),
-        "message": "Video uploaded, transcribed, and MCQs generated successfully",
+        "message": "Video uploaded and transcribed successfully",
         "transcript": transcript
     }
+
 
 @router.post("/upload-youtube/")
 def upload_youtube_video(youtube_url: str, title: str, db: Session = Depends(get_db)):
@@ -88,14 +79,8 @@ def upload_youtube_video(youtube_url: str, title: str, db: Session = Depends(get
     transcript = transcribe_audio(audio_path)
     video = save_video_and_transcript(title, video_filename, video_path, transcript, db)
 
-    try:
-        generate_and_store_mcqs(transcript, title, db)
-    except Exception as e:
-        logger.error(f"MCQ generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"MCQ generation failed: {e}")
-
     return {
         "id": str(video.id),
-        "message": "YouTube video processed, transcribed, and MCQs generated successfully",
+        "message": "YouTube video processed and transcribed successfully",
         "transcript": transcript
     }
