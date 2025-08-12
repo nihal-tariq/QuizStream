@@ -10,7 +10,6 @@ from app.utils.get_db import get_db
 
 router = APIRouter(prefix="/mcqs", tags=["MCQs"])
 
-
 get_db()
 
 @router.get("/by-title")
@@ -32,6 +31,7 @@ def get_mcqs_by_video_title(
     data = []
     for item in mcqs:
         entry = {
+            "id": str(item.id),  
             "question": item.question,
             "options": item.options if item.options else None,
             "answer": item.answer,
