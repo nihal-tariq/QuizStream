@@ -10,7 +10,7 @@ import logging
 
 get_db()
 
-router = APIRouter()
+router = APIRouter(prefix="/videos approval ", tags=["Videos Management"])
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

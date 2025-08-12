@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from app.utils.get_db import get_db
 from app.utils.audio_handling import extract_audio, transcribe_audio, save_video_and_transcript
 
-router = APIRouter()
+router = APIRouter(tags=['Video Upload'])
 
 UPLOAD_DIR = "uploads/videos/"
 AUDIO_DIR = "uploads/audio/"

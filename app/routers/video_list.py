@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.models.video import Video
 from app.utils.get_db import get_db
 
-router = APIRouter(prefix="/videos", tags=["Videos"])
+router = APIRouter(prefix="/videos list ", tags=["Videos Management"])
 
 
 get_db()

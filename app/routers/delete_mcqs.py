@@ -4,7 +4,7 @@ from app.models.mcqs import MCQ
 from uuid import UUID
 from app.utils.get_db import get_db
 
-router = APIRouter()
+router = APIRouter(prefix="/delete mcqs", tags=["Manage MCQs"])
 
 # Dependency to get DB session
 get_db()

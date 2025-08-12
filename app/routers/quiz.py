@@ -8,11 +8,11 @@ from datetime import datetime
 from app.models.mcqs import MCQ
 from app.utils.get_db import get_db
 
-router = APIRouter(prefix="/mcqs", tags=["MCQs"])
+router = APIRouter(prefix="/view mcqs", tags=["Manage MCQs"])
 
 get_db()
 
-@router.get("/by-title")
+@router.get("/by-title", )
 def get_mcqs_by_video_title(
     video_title: str = Query(..., description="Title of the video"),
     download: bool = Query(False, description="If true, returns a downloadable JSON file"),
