@@ -11,7 +11,7 @@ from app.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter()
 
-# --- SIGNUP (no auth) ---
+
 @router.post("/signup")
 def signup(username: str, name: str, password: str, role: UserRole, db: Session = Depends(get_db)):
     # Check if username already exists in either table
@@ -31,7 +31,7 @@ def signup(username: str, name: str, password: str, role: UserRole, db: Session 
     db.refresh(signup_request)
     return {"id": str(signup_request.id), "message": "Signup request submitted", "status": signup_request.status}
 
-# --- LOGIN ---
+
 @router.post("/login")
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == form_data.username).first()

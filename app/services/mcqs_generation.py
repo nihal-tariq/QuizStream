@@ -1,26 +1,51 @@
-import os, re, uuid, json, logging
-
+import json
+import logging
+import os
+import re
+import uuid
 from datetime import datetime
+
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
+from pathlib import Path
+from jinja2 import Template
+
 from app.models.mcqs import MCQ
 from google import genai
 
 logger = logging.getLogger(__name__)
-
 load_dotenv()
 
-# Initialize Gemini client
 api_key = os.getenv("GEMINI_FLASH_KEY")
 if not api_key:
     raise ValueError("GEMINI_FLASH_KEY is not set in environment variables.")
 client = genai.Client(api_key=api_key)
 
 
+def load_prompt_template(name: str) -> Template:
+    """
+    Load a Jinja2 template from the prompts directory.
+
+    Args:
+        name (str): The base name of the prompt file (without extension).
+
+    Returns:
+        Template: A compiled Jinja2 template ready for rendering.
+    """
+    prompt_path = Path("app/prompts") / f"{name}.txt"
+    text = prompt_path.read_text(encoding="utf-8")
+    return Template(text)
+
+
 def extract_json_from_text(text: str) -> str:
     """
     Extract valid JSON from Gemini output, stripping markdown fences or extra text.
-    Ensures we return only the JSON array.
+
+    Args:
+        text (str): Raw text output from Gemini.
+
+    Returns:
+        str: Extracted JSON string.
     """
     if not text:
         return text
@@ -33,7 +58,7 @@ def extract_json_from_text(text: str) -> str:
         if text.endswith("```"):
             text = text[:-3].strip()
 
-    # If there's a JSON array inside the text, extract it
+    # Extract JSON array if present
     if "[" in text and "]" in text:
         start = text.index("[")
         end = text.rindex("]") + 1
@@ -44,70 +69,45 @@ def extract_json_from_text(text: str) -> str:
 
 def generate_and_store_mcqs(transcript: str, video_title: str, db: Session):
     """
-    Generate MCQs and True/False questions from transcript using Gemini 2.5 Flash
-    and store them in the MCQ table with video_title.
+    Generate MCQs and True/False questions from a transcript using Gemini 2.5 Flash
+    and store them in the database.
+
+    Args:
+        transcript (str): Transcript text of the video.
+        video_title (str): Title of the associated video.
+        db (Session): SQLAlchemy session.
+
+    Returns:
+        dict: Summary message of stored questions.
+
+    Raises:
+        ValueError: If transcript is empty or Gemini response is invalid JSON.
+        RuntimeError: If API call or DB insert fails.
     """
     if not transcript or not transcript.strip():
         raise ValueError("Transcript is empty. Cannot generate MCQs.")
 
-    prompt = f"""
-    You are an expert educational assessment creator. 
-    You will be given a learning content text (such as a lecture, discussion, or training material).
-    Read it carefully and generate high-quality quiz questions that thoroughly assess the learner's understanding.
-
-    Instructions:
-    1. Analyze the provided learning material to identify its main concepts, supporting facts, examples, and reasoning patterns.
-    2. Consider the learning objectives implied or stated, and ensure your questions collectively cover all key ideas.
-    3. Create questions that are logical, unambiguous, and self-contained (make sense without referencing the original material).
-    4. Ensure variety in cognitive level:
-       - Include easy, moderate, and challenging questions.
-       - Test recall, application, and analysis.
-    5. For Multiple Choice Questions (MCQs):
-       - Create exactly 5 MCQs.
-       - Each MCQ must have 4 clear and distinct options.
-       - Only one correct answer per MCQ.
-       - Distractors should be plausible but incorrect.
-    6. For True/False questions:
-       - Create exactly 5 statements.
-       - Statements must be complete and understandable without saying “according to the transcript”.
-       - Ensure a balanced mix of True and False answers.
-    7. Avoid copying sentences verbatim unless necessary for accuracy.
-    8. Do NOT mention the words “transcript” or “document” in the final questions.
-
-    Output Format:
-    Return ONLY valid JSON in the following array format (no explanations, no markdown):
-    [
-        {{
-            "question": "...",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "answer": "Correct Option Text",
-            "type": "mcq"
-        }},
-        {{
-            "question": "...",
-            "answer": "True",
-            "type": "true_false"
-        }}
-    ]
-
-    Learning material:
-    {transcript}
-    """
+    # Load and render MCQ generation prompt
+    template = load_prompt_template("mcq_generator")
+    prompt = template.render(transcript=transcript)
 
     logger.info("Calling Gemini API for MCQ generation...")
+
     try:
         response = client.models.generate_content(
             model="models/gemini-2.5-flash",
-            contents=prompt
+            contents=prompt,
         )
     except Exception as e:
         logger.exception("Gemini API call failed")
         raise RuntimeError(f"Gemini API call failed: {e}")
 
-    # Get raw response text
     try:
-        raw_text = getattr(response, "text", None) or getattr(response, "output_text", None) or str(response)
-        logger.debug(f"Raw Gemini output (first 500 chars): {raw_text[:500]}")
+        raw_text = getattr(response, "text", None) or getattr(
+            response, "output_text", None
+        ) or str(response)
+
+        logger.debug("Raw Gemini output (first 500 chars): %s", raw_text[:500])
 
         clean_text = extract_json_from_text(raw_text)
         mcqs_data = json.loads(clean_text)
@@ -115,11 +115,10 @@ def generate_and_store_mcqs(transcript: str, video_title: str, db: Session):
         if not isinstance(mcqs_data, list):
             raise ValueError("Parsed JSON is not a list.")
     except Exception as e:
-        logger.error(f"Invalid JSON from Gemini: {e}")
+        logger.error("Invalid JSON from Gemini: %s", e)
         raise ValueError(f"Gemini response is not valid JSON: {e}")
 
-    # Store MCQs in database
-    logger.info(f"Storing {len(mcqs_data)} MCQs in database...")
+    logger.info("Storing %d MCQs in database...", len(mcqs_data))
     try:
         for item in mcqs_data:
             mcq_entry = MCQ(
@@ -128,13 +127,12 @@ def generate_and_store_mcqs(transcript: str, video_title: str, db: Session):
                 question=item.get("question"),
                 options=item.get("options") if item.get("type") == "mcq" else None,
                 answer=item.get("answer"),
-                created_at=datetime.utcnow()
+                created_at=datetime.utcnow(),
             )
             db.add(mcq_entry)
 
         db.commit()
-        logger.info(f"✅ Stored {len(mcqs_data)} MCQs for '{video_title}'")
-
+        logger.info("✅ Stored %d MCQs for '%s'", len(mcqs_data), video_title)
     except Exception as e:
         db.rollback()
         logger.exception("Database insert failed for MCQs")

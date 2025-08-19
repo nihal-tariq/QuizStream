@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from uuid import UUID
-from app.models.user import SignupRequest, User, UserRole
+from app.models.user import SignupRequest, User
 from app.utils.get_db import get_db
 from passlib.context import CryptContext
 
@@ -9,6 +9,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 router = APIRouter(prefix="/users", tags=["User Management"])
 
 # --- VIEW PENDING REQUESTS ---
+
+
 @router.get("/requests")
 def get_pending_requests(db: Session = Depends(get_db)):
     requests = db.query(SignupRequest).filter(SignupRequest.status == "pending").all()
