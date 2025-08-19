@@ -4,13 +4,13 @@ QuizStream is an AI-powered RAG (Retrieval-Augmented Generation) learning platfo
 
 ## 🚀 Features
 
-Role-Based Access Control
+### Role-Based Access Control
 
 Teachers: Upload videos or provide YouTube links, approve transcripts, and auto-generate quizzes.
 
 Students: Access video-specific MCQs (without answers) and interact with a transcript-powered chatbot.
 
-RAG-Powered System
+### RAG-Powered System
 
 Transcript chunks created using LangChain text splitters.
 
@@ -20,7 +20,7 @@ Queries resolved using a Maximum Marginal Relevance (MMR) retriever for better c
 
 Gemini 2.5 Flash generates chatbot responses grounded in retrieved transcript context.
 
-Video & Transcript Processing
+### Video & Transcript Processing
 
 Extracts audio from uploaded videos or YouTube links.
 
@@ -28,19 +28,19 @@ Generates high-quality transcripts using Deepgram.
 
 Stores transcript embeddings for efficient retrieval.
 
-Quiz Generation
+### Quiz Generation
 
 Once a transcript is approved, Gemini 2.5 Flash generates MCQs and True/False questions.
 
 Questions are stored in PostgreSQL for persistent access.
 
-Chatbot
+### Chatbot
 
 Retrieval-Augmented chatbot powered by Gemini 2.5 Flash + LangChain retrievers.
 
 Answers student queries based on the transcript of the selected video.
 
-Authentication & Authorization
+### Authentication & Authorization
 
 Secure JWT-based authentication.
 
