@@ -1,0 +1,41 @@
+You are an expert educational assessment creator.
+You will be given a learning content text (such as a lecture, discussion, or training material).
+Read it carefully and generate high-quality quiz questions that thoroughly assess the learner's understanding.
+
+Instructions:
+1. Analyze the provided learning material to identify its main concepts, supporting facts, examples, and reasoning patterns.
+2. Consider the learning objectives implied or stated, and ensure your questions collectively cover all key ideas.
+3. Create questions that are logical, unambiguous, and self-contained (make sense without referencing the original material).
+4. Ensure variety in cognitive level:
+   - Include easy, moderate, and challenging questions.
+   - Test recall, application, and analysis.
+5. For Multiple Choice Questions (MCQs):
+   - Create exactly 5 MCQs.
+   - Each MCQ must have 4 clear and distinct options.
+   - Only one correct answer per MCQ.
+   - Distractors should be plausible but incorrect.
+6. For True/False questions:
+   - Create exactly 5 statements.
+   - Statements must be complete and understandable without saying “according to the transcript”.
+   - Ensure a balanced mix of True and False answers.
+7. Avoid copying sentences verbatim unless necessary for accuracy.
+8. Do NOT mention the words “transcript” or “document” in the final questions.
+
+Output Format:
+Return ONLY valid JSON in the following array format (no explanations, no markdown):
+[
+    {
+        "question": "...",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "answer": "Correct Option Text",
+        "type": "mcq"
+    },
+    {
+        "question": "...",
+        "answer": "True",
+        "type": "true_false"
+    }
+]
+
+Learning material:
+{{ transcript }}

@@ -1,44 +1,87 @@
+"""
+Video Chat Service Module
+-------------------------
+
+This module provides functionality to:
+- Generate embeddings using Google's Gemini Embedding API.
+- Store/retrieve transcript embeddings in ChromaDB.
+- Build conversational context-aware prompts for video Q&A.
+- Query Gemini 2.5 Flash for responses using vector search.
+
+Dependencies:
+    - google.generativeai
+    - chromadb
+    - langchain-core
+    - langchain-community
+    - dotenv
+    - app.services.prompt_template (for building chat prompts)
+
+Environment Variables:
+    GEMINI_FLASH_KEY : API key for Google Generative AI.
+    CHROMA_DB_DIR    : Directory to persist ChromaDB collections.
+"""
 
 import os
+from typing import List
+
 from dotenv import load_dotenv
 import google.generativeai as genai
 
-from chromadb import PersistentClient
 from chromadb.api.types import Documents
-
 from langchain_core.embeddings import Embeddings
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 
 from app.services.prompt_template import build_chat_prompt
+
+
+# --------------------------------------------------------------------
+# Environment and Client Setup
+# --------------------------------------------------------------------
 
 load_dotenv()
 api_key = os.getenv("GEMINI_FLASH_KEY")
 if not api_key:
-    raise ValueError("KEY not found in .env")
+    raise ValueError("GEMINI_FLASH_KEY not found in .env")
 
 genai.configure(api_key=api_key)
 
-# Chroma client (persistent)
-persist_directory = "chroma_db"
-chroma_client = PersistentClient(path=persist_directory)
+# Chroma persistence directory
+PERSIST_DIR = os.getenv("CHROMA_DB_DIR", "chroma_db")
 
+
+# --------------------------------------------------------------------
+# Embedding Class
+# --------------------------------------------------------------------
 
 class GeminiEmbedding(Embeddings):
     """
-    Minimal embedding adapter compatible with:
-      - langchain Embeddings interface (embed_documents, embed_query)
-      - chromadb expectation for embedding_function.name()
+    Adapter class for generating embeddings with Gemini,
+    compatible with LangChain and Chroma vector store.
+
+    Implements:
+        - embed_documents: for bulk embeddings of transcripts.
+        - embed_query: for single query embedding.
+        - name: provides identifier for Chroma.
+
+    Uses Google's embedding model: `models/embedding-001`.
     """
 
     def name(self) -> str:
-        # chromadb calls embedding_function.name() in some code paths
+        """Return embedding function name for Chroma compatibility."""
         return "gemini_embedding"
 
-    def embed_documents(self, texts: Documents) -> list[list[float]]:
-        """Embed multiple documents (for storing)."""
+    def embed_documents(self, texts: Documents) -> List[List[float]]:
+        """
+        Generate embeddings for multiple text documents.
+
+        Args:
+            texts (Documents): List of input texts.
+
+        Returns:
+            List[List[float]]: Embedding vectors for each input.
+        """
         embeddings = []
         for text in texts:
-            # If text is bytes or not str, ensure conversion
             if not isinstance(text, str):
                 text = str(text)
             resp = genai.embed_content(
@@ -49,8 +92,16 @@ class GeminiEmbedding(Embeddings):
             embeddings.append(resp["embedding"])
         return embeddings
 
-    def embed_query(self, text: str) -> list[float]:
-        """Embed single query string (for searching)."""
+    def embed_query(self, text: str) -> List[float]:
+        """
+        Generate embedding for a single query string.
+
+        Args:
+            text (str): Query text.
+
+        Returns:
+            List[float]: Embedding vector.
+        """
         if not isinstance(text, str):
             text = str(text)
         resp = genai.embed_content(
@@ -61,39 +112,48 @@ class GeminiEmbedding(Embeddings):
         return resp["embedding"]
 
 
-def chat_with_video(video_title: str, user_query: str, session_history: list):
-    """
-    Retrieve relevant chunks from Chroma for `video_title`, build prompt
-    using session_history and context, then call Gemini to generate an answer.
-    """
+# --------------------------------------------------------------------
+# Chat Service
+# --------------------------------------------------------------------
 
+def chat_with_video(video_title: str, user_query: str, session_history: list) -> str:
+    """
+    Answer user queries about a specific video using context-aware retrieval.
+
+    Process:
+        1. Retrieve relevant transcript chunks from Chroma (MMR search).
+        2. Build chat prompt with history, context, and query.
+        3. Query Gemini 2.5 Flash model for final response.
+
+    Args:
+        video_title (str): Title of the video (used as Chroma collection name).
+        user_query (str): User's natural language question.
+        session_history (list): List of past conversation turns.
+
+    Returns:
+        str: Gemini-generated response text.
+    """
     collection_name = video_title.replace(" ", "_")
     embedding = GeminiEmbedding()
 
-    # Ensure collection exists. Do NOT pass a bare method to chroma_client.
-    # It's okay to create without specifying embedding_function here.
-    # chroma_client stores collections metadata and may later require consistent embedding.
-    try:
-        chroma_client.get_or_create_collection(name=collection_name)
-    except Exception:
-        # If something unexpected happens, try to create without checking
-        chroma_client.create_collection(name=collection_name)
-
-    # Wrap with LangChain's Chroma, so we can use .as_retriever(...)
+    # Initialize Chroma vectorstore with persistence
     vectorstore = Chroma(
-        client=chroma_client,
         collection_name=collection_name,
-        embedding_function=embedding  # pass object that implements embed_documents/embed_query/name
+        embedding_function=embedding,
+        persist_directory=PERSIST_DIR
     )
 
-    # Use MMR retriever
-    retriever = vectorstore.as_retriever(search_type="mmr", search_kwargs={"k": 5, "lambda_mult": 0.5})
+    # Retriever with Maximal Marginal Relevance (MMR)
+    retriever = vectorstore.as_retriever(
+        search_type="mmr",
+        search_kwargs={"k": 5, "lambda_mult": 0.5}
+    )
 
-    # Retrieve relevant documents
+    # Retrieve context documents
     retrieved_docs = retriever.invoke(user_query)
     context = "\n\n".join([getattr(d, "page_content", str(d)) for d in retrieved_docs])
 
-    # Build prompt with context + session
+    # Construct prompt
     prompt = build_chat_prompt(
         video_title=video_title,
         context=context,
@@ -101,9 +161,8 @@ def chat_with_video(video_title: str, user_query: str, session_history: list):
         user_query=user_query
     )
 
-    # Call Gemini generative model
+    # Query Gemini model
     model = genai.GenerativeModel("models/gemini-2.5-flash")
     response = model.generate_content(prompt)
 
-    # response may be a complex object; the textual contents are in response.text
     return getattr(response, "text", str(response))
