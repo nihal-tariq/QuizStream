@@ -139,3 +139,4 @@ def generate_and_store_mcqs(transcript: str, video_title: str, db: Session):
         raise RuntimeError(f"Failed to store MCQs: {e}")
 
     return {"message": f"{len(mcqs_data)} questions stored successfully"}
+
