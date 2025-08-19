@@ -29,7 +29,7 @@ import google.generativeai as genai
 
 from chromadb.api.types import Documents
 from langchain_core.embeddings import Embeddings
-from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
 
 from app.services.prompt_template import build_chat_prompt
 
