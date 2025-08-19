@@ -134,6 +134,8 @@ Start the FastAPI server:
 
 `uvicorn app.main:app --reload`
 
+FastAPI available at: http://127.0.0.1:8000/ 
+
 ## 🐳 Docker Support
 
 Build and run using Docker:
