@@ -25,7 +25,7 @@ RUN mkdir -p /app/chroma_db
 RUN useradd -u 10001 -m appuser && chown -R appuser:appuser /app
 USER appuser
 
-EXPOSE 8018
+EXPOSE 8000
 
 # If your ASGI path is different, change `app.main:app`
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8018"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

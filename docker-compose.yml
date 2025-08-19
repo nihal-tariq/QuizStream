@@ -15,7 +15,7 @@ services:
       CHROMA_DB_DIR: /app/chroma_db
 
     ports:
-      - "8018:8000"
+      - "8000:8000"
 
     # Persist Chroma across restarts; keep secrets out of the image
     volumes:

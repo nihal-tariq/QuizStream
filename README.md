@@ -142,6 +142,9 @@ Build and run using Docker:
 
 `docker compose up -d --build`
 
+FASTAPI available at: http://localhost:8000
+Swagger UI: http://localhost:8000/docs
+
 ## 📖 Future Enhancements
 
 Add student quiz scoring & analytics
