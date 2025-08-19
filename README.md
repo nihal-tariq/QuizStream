@@ -132,13 +132,13 @@ Set up environment variables in .env:
 
 Start the FastAPI server:
 
-uvicorn app.main:app --reload
+`uvicorn app.main:app --reload`
 
 ## 🐳 Docker Support
 
 Build and run using Docker:
 
-docker compose up -d --build
+`docker compose up -d --build`
 
 ## 📖 Future Enhancements
 
