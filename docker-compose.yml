@@ -1,0 +1,34 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quizapi
+    restart: unless-stopped
+
+    # Load DATABASE_URL and other secrets from your local .env (not baked into image)
+    env_file:
+      - .env
+
+    environment:
+      # Make the Chroma path explicit (your code can read this, see step 4)
+      CHROMA_DB_DIR: /app/chroma_db
+
+    ports:
+      - "8018:8000"
+
+    # Persist Chroma across restarts; keep secrets out of the image
+    volumes:
+      - chroma_data:/app/chroma_db
+      # (Optional for live-reload in dev)
+      # - ./:/app
+
+    # Simple healthcheck (can be tweaked)
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1',8000)); s.close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  chroma_data:
