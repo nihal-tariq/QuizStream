@@ -1,8 +1,8 @@
-QuizStream 🎥🧠
+# QuizStream 🎥🧠
 
 QuizStream is an AI-powered RAG (Retrieval-Augmented Generation) learning platform that transforms educational videos into intelligent quizzes and interactive chat-based study sessions. It leverages Gemini 2.5 Flash, Deepgram, LangChain, and ChromaDB to generate transcripts, create MCQs/True-False questions, and enable retrieval-based chatbot interactions.
 
-🚀 Features
+## 🚀 Features
 
 Role-Based Access Control
 
@@ -46,7 +46,7 @@ Secure JWT-based authentication.
 
 Role-based access (Teacher/Student) to endpoints and features.
 
-🛠️ Tech Stack
+## 🛠️ Tech Stack
 
 Backend: FastAPI
 
@@ -70,7 +70,7 @@ Authentication: JWT Tokens
 
 Containerization: Docker
 
-📂 Project Workflow
+## 📂 Project Workflow
 
 Teacher uploads video / YouTube link
 
@@ -88,29 +88,29 @@ View MCQs (without answers)
 
 Chat with the QuizBot using video title (responses powered by RAG-based retrieval from transcript embeddings)
 
-🔑 Endpoints Overview
+## 🔑 Endpoints Overview
 
-Auth
+### Auth
 
-POST /auth/signup – Register user (Teacher/Student)
+POST `/auth/signup` – Register user (Teacher/Student)
 
-POST /auth/login – Login & get JWT token
+POST `/auth/login` – Login & get JWT token
 
-Teacher Endpoints
+### Teacher Endpoints
 
-POST /videos/upload – Upload a video file or YouTube link
+POST `/videos/upload` – Upload a video file or YouTube link
 
-GET /videos/list – View all uploaded videos
+GET `/videos/list` – View all uploaded videos
 
-POST /videos/{id}/approve – Approve transcript & trigger quiz generation
+POST `/videos/{id}/approve` – Approve transcript & trigger quiz generation
 
-Student Endpoints
+### Student Endpoints
 
-GET /quiz/{video_title} – Fetch MCQs/TF questions (no answers)
+GET `/quiz/{video_title}` – Fetch MCQs/TF questions (no answers)
 
-POST /chat/{video_title} – Chat with the AI chatbot about the video (RAG-based)
+POST `/chat/{video_title}` – Chat with the AI chatbot about the video (RAG-based)
 
-⚡ Installation
+## ⚡ Installation
 
 Clone the repo:
 
@@ -120,11 +120,12 @@ cd QuizStream
 
 Create a virtual environment & install dependencies:
 
+```
 python -m venv .venv
 source .venv/bin/activate   # Linux/Mac
 .venv\Scripts\activate      # Windows
 pip install -r requirements.txt
-
+```
 
 Set up environment variables in .env:
 
@@ -133,19 +134,19 @@ Start the FastAPI server:
 
 uvicorn app.main:app --reload
 
-🐳 Docker Support
+## 🐳 Docker Support
 
 Build and run using Docker:
 
 docker compose up -d --build
 
-📖 Future Enhancements
+## 📖 Future Enhancements
 
 Add student quiz scoring & analytics
 
 Integrate leaderboards & progress tracking
 
 
-🤝 Contributing
+## 🤝 Contributing
 
 Contributions, issues, and feature requests are welcome!
