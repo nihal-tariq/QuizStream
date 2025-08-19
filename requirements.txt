@@ -2,6 +2,15 @@ SQLAlchemy~=2.0.42
 python-dotenv~=1.1.1
 fastapi~=0.116.1
 pydantic~=2.11.7
+python-multipart~=0.0.20
 passlib~=1.7.4
+python-jose[cryptography]
 chromadb~=1.0.15
 langchain~=0.3.27
+alembic~=1.16.4
+psycopg2-binary>=2.9.9
+ffmpeg-python~=0.2.0
+deepgram-sdk~=3.2.3
+imageio-ffmpeg==0.6.0
+google-generativeai==0.8.5
+Jinja2~=3.1.6
