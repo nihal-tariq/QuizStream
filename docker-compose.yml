@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: quizapi
+    container_name: quizstream
     restart: unless-stopped
 
     # Load DATABASE_URL and other secrets from your local .env (not baked into image)

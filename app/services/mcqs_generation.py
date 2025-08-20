@@ -11,7 +11,7 @@ from pathlib import Path
 from jinja2 import Template
 
 from app.models.mcqs import MCQ
-from google import genai
+import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
 load_dotenv()
