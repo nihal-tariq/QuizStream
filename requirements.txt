@@ -1,34 +1,20 @@
-# Core
 fastapi~=0.116.1
 uvicorn[standard]~= 0.35.0
 pydantic~=2.11.7
 python-dotenv~=1.0.1
-
-# Database
 SQLAlchemy~=2.0.42
 psycopg2-binary>=2.9.9
-
-
-# Auth
 passlib~=1.7.4
 python-jose[cryptography]~=3.5.0
-
-# File uploads
 python-multipart~=0.0.20
-
-# Vector DB + LangChain
 chromadb~=1.0.15
 langchain~=0.3.27
 langchain-community~=0.3.3
 langchain-core~=0.3.27
-
-# Media processing
 ffmpeg-python~=0.2.0
 imageio-ffmpeg==0.6.0
-deepgram-sdk~=3.2.3
-
-# Google Generative AI
+deepgram-sdk==2.12.0
+yt-dlp
+sentence-transformers
 google-generativeai==0.8.5
-
-# Templates
 Jinja2~=3.1.6

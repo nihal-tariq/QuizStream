@@ -14,12 +14,13 @@ from app.models.mcqs import MCQ
 import google.generativeai as genai
 
 logger = logging.getLogger(__name__)
-load_dotenv()
 
+load_dotenv()
 api_key = os.getenv("GEMINI_FLASH_KEY")
 if not api_key:
-    raise ValueError("GEMINI_FLASH_KEY is not set in environment variables.")
-client = genai.Client(api_key=api_key)
+    raise ValueError("GEMINI_FLASH_KEY not found in .env")
+
+genai.configure(api_key=api_key)
 
 
 def load_prompt_template(name: str) -> Template:
@@ -94,10 +95,8 @@ def generate_and_store_mcqs(transcript: str, video_title: str, db: Session):
     logger.info("Calling Gemini API for MCQ generation...")
 
     try:
-        response = client.models.generate_content(
-            model="models/gemini-2.5-flash",
-            contents=prompt,
-        )
+        model = genai.GenerativeModel("models/gemini-2.5-flash")
+        response = model.generate_content(prompt)
     except Exception as e:
         logger.exception("Gemini API call failed")
         raise RuntimeError(f"Gemini API call failed: {e}")

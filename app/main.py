@@ -29,6 +29,11 @@ def on_startup():
     Base.metadata.create_all(bind=engine)
 
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
+
 # Authentication routes
 app.include_router(auth_router.router, tags=["Auth"])
 app.include_router(manage_users.router)

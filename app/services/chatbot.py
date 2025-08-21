@@ -46,7 +46,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Chroma persistence directory
-PERSIST_DIR = os.getenv("CHROMA_DB_DIR", "chroma_db")
+PERSIST_DIR = os.getenv("CHROMA_DB_DIR", "/app/chroma_db")
 
 
 # --------------------------------------------------------------------

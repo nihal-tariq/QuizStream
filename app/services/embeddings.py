@@ -16,7 +16,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Initialize Chroma persistent client
-persist_directory = "chroma_db"
+persist_directory = "/app/chroma_db"
 os.makedirs(persist_directory, exist_ok=True)
 chroma_client = PersistentClient(path=persist_directory)
 

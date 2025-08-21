@@ -20,8 +20,7 @@ services:
     # Persist Chroma across restarts; keep secrets out of the image
     volumes:
       - chroma_data:/app/chroma_db
-      # (Optional for live-reload in dev)
-      # - ./:/app
+
 
     # Simple healthcheck (can be tweaked)
     healthcheck:
@@ -32,3 +31,4 @@ services:
 
 volumes:
   chroma_data:
+

@@ -26,6 +26,11 @@ engine = create_engine(
 
 # Session maker
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
-
-# Base class for models
 Base = declarative_base()
+
+
+def init_db():
+    Base.metadata.create_all(bind=engine)
+
+
+
